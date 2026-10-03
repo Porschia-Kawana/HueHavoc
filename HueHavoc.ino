@@ -4,34 +4,105 @@
 
 hd44780_I2Cexp lcd;
 
-// VARIABLES
+// -------------------------
+// BUTTON TYPES
+// -------------------------
+
+enum Button {
+    NO_BUTTON,
+    RED_PRESSED,
+    GREEN_PRESSED
+};
+
+// -------------------------
+// GAME SETTINGS
+// -------------------------
+
+const int STARTING_TIME = 60;          // Starting game time in seconds
+const int WIN_TIME_BONUS = 5;          // Seconds added after a win
+const int LOSE_TIME_PENALTY = 10;      // Seconds removed after a loss
+const int RGB_TOLERANCE_PERCENT = 10;  // Allowed RGB error percentage
+
+// -------------------------
+// PLAYER RGB VALUES
+// -------------------------
+
+int playerRed = 0;
+int playerGreen = 0;
+int playerBlue = 0;
+
+// -------------------------
+// TARGET RGB VALUES
+// -------------------------
+
+int targetRed = 0;
+int targetGreen = 0;
+int targetBlue = 0;
+
+// -------------------------
+// COUNTDOWN VARIABLES
+// -------------------------
+
 unsigned long countdownStartTime;
-unsigned long countdownDuration;
+unsigned long remainingTime;
+
 bool countdownRunning = false;
 
-// TEMPORARY VARIABLES
-static bool started = false;
+// -------------------------
+// GAME VARIABLES
+// -------------------------
+
+bool started = false;
+bool gameOver = false;
+
+unsigned long gameStartTime;
+int roundsWon = 0;
+
+// -------------------------
+// SETUP
+// -------------------------
 
 void setup() {
+
     Serial.begin(9600);
+
+    setupLEDPins();
     setupLCD();
+    setupButtons();
+    setupEncoders();
+
+    randomSeed(analogRead(A0));
 }
 
+// -------------------------
+// LOOP
+// -------------------------
 
 void loop() {
-    if (!started) {
-        delay(2000);
-        displayTopText("Ready Set Go!");
 
-        for (int i = 3; i > 0; i--) {
-            setTimerNumbers(" ", String(i));
-            delay(1000);
+    int button = checkButtons();
+
+    if (button == GREEN_PRESSED) {
+        // Start a new game
+        if (!started) {
+            startGame();
         }
-
-        displayTopText("Find the RGB!");
-        startCountdown(60);
-        started = true;
+        // Submit current answer
+        else if (!gameOver) {
+            submitAnswer();
+        }
     }
 
-    countdown();
+    if (button == RED_PRESSED) {
+        // Reserved for future use
+    }
+
+    // -------------------------
+    // GAME RUNNING
+    // -------------------------
+
+    if (started && !gameOver) {
+        countdown();
+        updateEncoders();
+    }
 }

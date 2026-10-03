@@ -1,33 +1,70 @@
+// -------------------------
 // VARIABLES
+// -------------------------
+
 unsigned long lastPrint = 0;
 
-// FUNCTIONS
+// -------------------------
+// START COUNTDOWN
+// -------------------------
+
 void startCountdown(unsigned long seconds) {
-    countdownDuration = seconds;
+    remainingTime = seconds;
     countdownStartTime = millis();
+    countdownRunning = true;
 }
 
+// -------------------------
+// COUNTDOWN
+// -------------------------
+
 void countdown() {
-    unsigned long elapsed = millis() - countdownStartTime;
-    if (elapsed < countdownDuration * 1000UL) {
-        unsigned long remaining =
-            countdownDuration - (elapsed / 1000UL);
-        int tens = remaining / 10;
-        int ones = remaining % 10;
-
-        setTimerNumbers(String(tens), String(ones));
-
-    if (elapsed >= 10000 && elapsed - lastPrint >= 5000) {
-        displayRandomMessageOfEncouragement();
-        Serial.println(elapsed);
-        lastPrint = elapsed;
+    if (!countdownRunning) {
+        return;
     }
 
-    } else {
-        lcd.setCursor(13, 0);
-        lcd.print("0");
-        lcd.setCursor(14, 0);
-        lcd.print("0");
-        displayTopText("Game over!");
+    unsigned long elapsed =
+        (millis() - countdownStartTime) / 1000UL;
+
+    if (elapsed > 0) {
+        // TIMER HAS REACHED ZERO
+        if (elapsed >= remainingTime) {
+            remainingTime = 0;
+            countdownRunning = false;
+
+            // Automatically submit
+            submitAnswer();
+            return;
+        }
+
+        // REMOVE ELAPSED TIME
+        remainingTime -= elapsed;
+        countdownStartTime = millis();
+    }
+
+    // -------------------------
+    // DISPLAY TIMER
+    // -------------------------
+
+    int tens = (remainingTime / 10) % 10;
+    int ones = remainingTime % 10;
+
+    setTimerNumbers(
+        String(tens),
+        String(ones)
+    );
+
+    // -------------------------
+    // ENCOURAGEMENT
+    // -------------------------
+
+    unsigned long totalElapsed =
+        millis() - gameStartTime;
+
+    if (totalElapsed >= 10000 &&
+        totalElapsed - lastPrint >= 5000) {
+        displayRandomMessageOfEncouragement();
+        Serial.println(totalElapsed);
+        lastPrint = totalElapsed;
     }
 }
