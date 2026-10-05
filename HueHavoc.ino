@@ -4,9 +4,6 @@
 
 hd44780_I2Cexp lcd;
 
-// -------------------------
-// BUTTON TYPES
-// -------------------------
 
 enum Button {
     NO_BUTTON,
@@ -14,92 +11,116 @@ enum Button {
     GREEN_PRESSED
 };
 
-// -------------------------
+
+// ==========================================
 // GAME SETTINGS
-// -------------------------
+// ==========================================
 
-const int STARTING_TIME = 60;          // Starting game time in seconds
-const int WIN_TIME_BONUS = 5;          // Seconds added after a win
-const int LOSE_TIME_PENALTY = 10;      // Seconds removed after a loss
-const int RGB_TOLERANCE_PERCENT = 10;  // Allowed RGB error percentage
+const int MAX_TIME = 90;
+const int STARTING_TIME = 60;
 
-// -------------------------
-// PLAYER RGB VALUES
-// -------------------------
+const int WIN_TIME_BONUS = 5;
+const int LOSE_TIME_PENALTY = 5;
+
+const int MIN_TARGET_DIFFERENCE = 51;
+
+// ==========================================
+// PLAYER RGB
+// ==========================================
 
 int playerRed = 0;
 int playerGreen = 0;
 int playerBlue = 0;
 
-// -------------------------
-// TARGET RGB VALUES
-// -------------------------
+// ==========================================
+// TARGET RGB
+// ==========================================
 
 int targetRed = 0;
 int targetGreen = 0;
 int targetBlue = 0;
 
-// -------------------------
-// COUNTDOWN VARIABLES
-// -------------------------
+bool targetGenerated = false;
 
-unsigned long countdownStartTime;
+// ==========================================
+// TIMER
+// ==========================================
+
+// Time allocated to the current/next round
+int roundTime = STARTING_TIME;
+
+// Actual live countdown
 unsigned long remainingTime;
-
+unsigned long countdownStartTime;
 bool countdownRunning = false;
 
-// -------------------------
-// GAME VARIABLES
-// -------------------------
+// ==========================================
+// GAME STATE
+// ==========================================
 
 bool started = false;
 bool gameOver = false;
 
-unsigned long gameStartTime;
-int roundsWon = 0;
+// ==========================================
+// SCORE
+// ==========================================
 
-// -------------------------
+int roundsCompleted = 0;
+int totalPoints = 0;
+int perfectMatches = 0;
+
+// ==========================================
 // SETUP
-// -------------------------
+// ==========================================
 
 void setup() {
-
     Serial.begin(9600);
-
     setupLEDPins();
     setupLCD();
     setupButtons();
     setupEncoders();
-
     randomSeed(analogRead(A0));
 }
 
-// -------------------------
-// LOOP
-// -------------------------
+// ==========================================
+// MAIN LOOP
+// ==========================================
 
 void loop() {
-
     int button = checkButtons();
 
+    // ==========================================
+    // GREEN BUTTON
+    // ==========================================
+
     if (button == GREEN_PRESSED) {
-        // Start a new game
-        if (!started) {
+        if (!started || gameOver) {
+            // Start a new game
             startGame();
-        }
-        // Submit current answer
-        else if (!gameOver) {
+        } else {
+            // Submit current answer
             submitAnswer();
         }
     }
 
+    // ==========================================
+    // RED BUTTON
+    // ==========================================
+
     if (button == RED_PRESSED) {
-        // Reserved for future use
+        // Stop the current game immediately
+        if (started && !gameOver) {
+            countdownRunning = false;
+            gameOver = true;
+            turnPlayerLightOff();
+            turnTargetLightOff();
+            displayGameOver();
+        }
     }
 
-    // -------------------------
+    // ==========================================
     // GAME RUNNING
-    // -------------------------
+    // ==========================================
 
     if (started && !gameOver) {
         countdown();
