@@ -1,7 +1,3 @@
-// -------------------------
-// VARIABLES
-// -------------------------
-
 String messages[] = {
     "Hue got this!",
     "Think pink!",
@@ -21,99 +17,94 @@ String messages[] = {
     "Hue know it!"
 };
 
-// -------------------------
-// LCD SETUP
-// -------------------------
+// ==========================================
+// SETUP LCD
+// ==========================================
 
 void setupLCD() {
     lcd.begin(16, 2);
-    displayTopText("Play Hue Havoc!");
-    setRGB();
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Play Hue Havoc!");
+    lcd.setCursor(0, 1);
+    lcd.print("                ");
 }
 
-
-// -------------------------
-// DISPLAY TOP ROW
-// -------------------------
+// ==========================================
+// DISPLAY TOP TEXT
+// ==========================================
 
 void displayTopText(String message) {
     if (message.length() > 13) {
         message = message.substring(0, 13);
     }
 
-    while (message.length() < 13) {
-        message += " ";
-    }
-
     lcd.setCursor(0, 0);
     lcd.print(message);
+
+    for (int i = message.length(); i < 13; i++) {
+        lcd.print(" ");
+    }
 }
 
-// -------------------------
+// ==========================================
 // RANDOM MESSAGE
-// -------------------------
+// ==========================================
 
 void displayRandomMessageOfEncouragement() {
-    int number =
-        random(
-            0,
-            sizeof(messages) / sizeof(messages[0])
-        );
+    int number = random(0, sizeof(messages) / sizeof(messages[0]));
     displayTopText(messages[number]);
 }
 
-// -------------------------
-// INITIAL RGB DISPLAY
-// -------------------------
-
-void setRGB() {
-    lcd.setCursor(0, 1);
-    lcd.print("R000 G000 B000");
-}
-
-// -------------------------
+// ==========================================
 // DISPLAY PLAYER RGB
-// -------------------------
+// ==========================================
 
 void displayRGB() {
     lcd.setCursor(0, 1);
-
-    // RED
     lcd.print("R");
+
     if (playerRed < 100) {
         lcd.print("0");
     }
+
     if (playerRed < 10) {
         lcd.print("0");
     }
-    lcd.print(playerRed);
 
-    // GREEN
+    lcd.print(playerRed);
     lcd.print(" G");
+
     if (playerGreen < 100) {
         lcd.print("0");
     }
+
     if (playerGreen < 10) {
         lcd.print("0");
     }
-    lcd.print(playerGreen);
 
-    // BLUE
+    lcd.print(playerGreen);
     lcd.print(" B");
+
     if (playerBlue < 100) {
         lcd.print("0");
     }
+
     if (playerBlue < 10) {
         lcd.print("0");
     }
+
     lcd.print(playerBlue);
 }
 
-// -------------------------
+// ==========================================
 // DISPLAY TIMER
-// -------------------------
+// ==========================================
 
-void setTimerNumbers(String tens, String ones) {
+void displayTimer(unsigned long seconds) {
+    int tens = (seconds / 10) % 10;
+    int ones = seconds % 10;
+
     lcd.setCursor(13, 0);
     lcd.print(tens);
 
@@ -124,26 +115,74 @@ void setTimerNumbers(String tens, String ones) {
     lcd.print("s");
 }
 
-// -------------------------
-// DISPLAY GAME OVER
-// -------------------------
+// ==========================================
+// PERFECT RESULT
+// ==========================================
+
+void displayPerfectResult(int score) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Perfect match!");
+    lcd.setCursor(0, 1);
+    lcd.print("PTS: ");
+    lcd.print(score);
+}
+
+// ==========================================
+// SO CLOSE RESULT
+// ==========================================
+
+void displaySoCloseResult(int score) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("So Close!");
+    lcd.setCursor(0, 1);
+    lcd.print("PTS: ");
+    lcd.print(score);
+}
+
+// ==========================================
+// MISSED RESULT
+// ==========================================
+
+void displayMissResult(int distance, int score) {
+    lcd.clear();
+    // Line 1
+    lcd.setCursor(0, 0);
+    lcd.print("Dist from target");
+    // Line 2
+    lcd.setCursor(0, 1);
+    lcd.print(distance);
+    lcd.setCursor(10, 1);
+    lcd.print("PTS:");
+    lcd.print(score);
+}
+
+// ==========================================
+// GAME OVER
+// ==========================================
 
 void displayGameOver() {
-    // Top row
+    lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Game over!      ");
-
-    // Bottom row
+    lcd.print("Game over!");
     lcd.setCursor(0, 1);
-    lcd.print("Rounds won: ");
-    lcd.print(roundsWon);
+    lcd.print("R:");
+    lcd.print(roundsCompleted);
+    lcd.print(" W:");
+    lcd.print(perfectMatches);
+    lcd.print(" PTS:");
+    lcd.print(totalPoints);
+}
 
-    // Clear anything left over
-    int length =
-        12 + String(roundsWon).length();
+// ==========================================
+// PLAYER WON
+// ==========================================
 
-    while (length < 16) {
-        lcd.print(" ");
-        length++;
-    }
+void displayPlayerWon() {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Congratulations,");
+    lcd.setCursor(0, 1);
+    lcd.print("You Won!");
 }

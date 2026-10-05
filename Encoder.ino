@@ -1,41 +1,45 @@
-// -------------------------
-// ENCODER PINS
-// -------------------------
-
+// ==========================================
 // RED ENCODER
+// ==========================================
+
 const int ENCODER_RED_A = 2;
 const int ENCODER_RED_B = 4;
 
-
+// ==========================================
 // GREEN ENCODER
-const int ENCODER_GREEN_A = 12;
-const int ENCODER_GREEN_B = 13;
+// ==========================================
 
+const int ENCODER_GREEN_A = 7;
+const int ENCODER_GREEN_B = 8;
 
+// ==========================================
 // BLUE ENCODER
-const int ENCODER_BLUE_A = 7;
-const int ENCODER_BLUE_B = 8;
+// ==========================================
 
+const int ENCODER_BLUE_A = 12;
+const int ENCODER_BLUE_B = 13;
 
-// -------------------------
+// ==========================================
 // ENCODER STATES
-// -------------------------
+// ==========================================
 
 int previousRedState;
 int previousGreenState;
 int previousBlueState;
 
+// ==========================================
+// ENCODER COUNTERS
+// ==========================================
+
 int redEncoderCount = 0;
 int greenEncoderCount = 0;
 int blueEncoderCount = 0;
 
-
-// -------------------------
+// ==========================================
 // SETUP ENCODERS
-// -------------------------
+// ==========================================
 
 void setupEncoders() {
-
     pinMode(ENCODER_RED_A, INPUT_PULLUP);
     pinMode(ENCODER_RED_B, INPUT_PULLUP);
 
@@ -45,46 +49,24 @@ void setupEncoders() {
     pinMode(ENCODER_BLUE_A, INPUT_PULLUP);
     pinMode(ENCODER_BLUE_B, INPUT_PULLUP);
 
-
-    previousRedState =
-        (digitalRead(ENCODER_RED_A) << 1) |
-        digitalRead(ENCODER_RED_B);
-
-    previousGreenState =
-        (digitalRead(ENCODER_GREEN_A) << 1) |
-        digitalRead(ENCODER_GREEN_B);
-
-    previousBlueState =
-        (digitalRead(ENCODER_BLUE_A) << 1) |
-        digitalRead(ENCODER_BLUE_B);
+    previousRedState = (digitalRead(ENCODER_RED_A) << 1) | digitalRead(ENCODER_RED_B);
+    previousGreenState = (digitalRead(ENCODER_GREEN_A) << 1) | digitalRead(ENCODER_GREEN_B);
+    previousBlueState = (digitalRead(ENCODER_BLUE_A) << 1) | digitalRead(ENCODER_BLUE_B);
 }
 
-// -------------------------
-// READ ONE ENCODER STEP
-// -------------------------
+// ==========================================
+// READ ENCODER
+// ==========================================
 
-int readEncoder(
-    int pinA,
-    int pinB,
-    int &previousState,
-    int &count
-) {
-
-    int currentState =
-        (digitalRead(pinA) << 1) |
-        digitalRead(pinB);
-
-
-    int transition =
-        (previousState << 2) |
-        currentState;
-
+int readEncoder(int pinA, int pinB, int &previousState, int &count) {
+    int currentState = (digitalRead(pinA) << 1) | digitalRead(pinB);
+    int transition = (previousState << 2) | currentState;
 
     previousState = currentState;
 
-    // -------------------------
+    // ======================================
     // CLOCKWISE
-    // -------------------------
+    // ======================================
 
     if (
         transition == 0b0001 ||
@@ -92,13 +74,12 @@ int readEncoder(
         transition == 0b1110 ||
         transition == 0b1000
     ) {
-
-        count++;
+        count--;
     }
 
-    // -------------------------
-    // COUNTER-CLOCKWISE
-    // -------------------------
+    // ======================================
+    // ANTICLOCKWISE
+    // ======================================
 
     if (
         transition == 0b0010 ||
@@ -106,13 +87,12 @@ int readEncoder(
         transition == 0b1101 ||
         transition == 0b0100
     ) {
-
-        count--;
+        count++;
     }
 
-    // -------------------------
-    // COMPLETE DETENT
-    // -------------------------
+    // ======================================
+    // COMPLETE STEP
+    // ======================================
 
     if (count >= 4) {
         count = 0;
@@ -127,18 +107,17 @@ int readEncoder(
     return 0;
 }
 
-
-// -------------------------
-// UPDATE ENCODERS
-// -------------------------
+// ==========================================
+// UPDATE ALL ENCODERS
+// ==========================================
 
 void updateEncoders() {
 
     bool changed = false;
 
-    // -------------------------
-    // RED ENCODER
-    // -------------------------
+    // ======================================
+    // RED
+    // ======================================
 
     int redChange =
         readEncoder(
@@ -148,22 +127,15 @@ void updateEncoders() {
             redEncoderCount
         );
 
-
     if (redChange != 0) {
         playerRed += redChange * 5;
-        playerRed =
-            constrain(
-                playerRed,
-                0,
-                255
-            );
-
+        playerRed = constrain(playerRed, 0, 255);
         changed = true;
     }
 
-    // -------------------------
-    // GREEN ENCODER
-    // -------------------------
+    // ======================================
+    // GREEN
+    // ======================================
 
     int greenChange =
         readEncoder(
@@ -175,19 +147,13 @@ void updateEncoders() {
 
     if (greenChange != 0) {
         playerGreen += greenChange * 5;
-        playerGreen =
-            constrain(
-                playerGreen,
-                0,
-                255
-            );
-
+        playerGreen = constrain(playerGreen, 0, 255);
         changed = true;
     }
 
-    // -------------------------
-    // BLUE ENCODER
-    // -------------------------
+    // ======================================
+    // BLUE
+    // ======================================
 
     int blueChange =
         readEncoder(
@@ -199,18 +165,13 @@ void updateEncoders() {
 
     if (blueChange != 0) {
         playerBlue += blueChange * 5;
-        playerBlue =
-            constrain(
-                playerBlue,
-                0,
-                255
-            );
+        playerBlue = constrain(playerBlue, 0, 255);
         changed = true;
     }
 
-    // -------------------------
-    // UPDATE DISPLAY/LED
-    // -------------------------
+    // ======================================
+    // UPDATE LED + LCD
+    // ======================================
 
     if (changed) {
         updatePlayerRGB();
