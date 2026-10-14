@@ -135,7 +135,7 @@ void displayPerfectResult(int score) {
 void displaySoCloseResult(int score) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("So Close!");
+    lcd.print("So Close! ^_^");
     lcd.setCursor(0, 1);
     lcd.print("PTS: ");
     lcd.print(score);
